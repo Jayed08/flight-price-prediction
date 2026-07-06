@@ -32,7 +32,7 @@ st.sidebar.caption("Hyperparameters optimized via Optuna framework. Preprocessin
 # =====================================================================
 # 2. Pipeline Dependencies & Robust Feature Schema Mapping
 # =====================================================================
-MODEL_PATH = "xgboost_flight_price.joblib"
+MODEL_PATH = "./xgboost_flight_price.joblib"
 
 @st.cache_resource
 def load_production_model(path):
