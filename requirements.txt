@@ -1,5 +1,5 @@
 streamlit
 pandas
 numpy
-xgboost==2.0.3
+xgboost==3.2.0
 joblib
