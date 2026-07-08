@@ -14,25 +14,44 @@ st.set_page_config(
 )
 
 # Sidebar - Technical Specifications Matrix
-st.sidebar.header("📊 Model Information")
-st.sidebar.markdown("""
-**Core Architecture:**
-`XGBoost Regressor`
+st.sidebar.header("📊 Model Overview")
 
-**Validation Performance Metrics (5-Fold CV):**
-* **$R^2$ Score:** `0.9885`
-* **RMSE:** `₹2438`
-* **MAE:** `₹1172`
+st.sidebar.markdown("""
+**Model:** XGBoost Regressor
+
+**Dataset**
+- 300,153 flight records
+- 37 engineered features
+
+### 🎯 Test Set Performance
+
+- **R²:** `0.9895`
+- **RMSE:** `₹2,330`
+- **MAE:** `₹1,085`
+
+### 🔁 5-Fold Cross Validation
+
+- **R²:** `0.9889`
+- **RMSE:** `₹2,395`
+- **MAE:** `₹1,133`
 """)
 
 st.sidebar.divider()
-st.sidebar.markdown("### 🛠️ Optimization Framework")
-st.sidebar.caption("Hyperparameters optimized via Optuna framework. Preprocessing engineered to eliminate operational data leakage.")
+
+st.sidebar.markdown("### ⚙️ Training Pipeline")
+
+st.sidebar.caption("""
+• Hyperparameter tuning with Optuna
+• 5-fold cross-validation
+• SHAP explainability
+• Leakage-aware preprocessing
+""")
 
 # =====================================================================
 # 2. Pipeline Dependencies & Robust Feature Schema Mapping
 # =====================================================================
-MODEL_PATH = "./xgboost_flight_price.joblib"
+MODEL_PATH = "model/xgb_flight_price.pkl" if os.path.exists("model/xgb_flight_price.pkl") else "xgb_flight_price.pkl"
+FEATURE_COLS_PATH = "model/feature_columns.pkl" if os.path.exists("model/feature_columns.pkl") else "feature_columns.pkl"
 
 @st.cache_resource
 def load_production_model(path):
@@ -40,26 +59,34 @@ def load_production_model(path):
         return joblib.load(path)
     return None
 
+@st.cache_resource
+def load_feature_columns(path):
+    if os.path.exists(path):
+        return joblib.load(path)
+    return None
+
 model = load_production_model(MODEL_PATH)
+dynamic_features = load_feature_columns(FEATURE_COLS_PATH)
 
 # Definitive categorical levels matching the training schema exactly
 airlines = ['SpiceJet', 'AirAsia', 'Vistara', 'GO_FIRST', 'Indigo', 'Air_India']
 cities = ['Delhi', 'Mumbai', 'Bangalore', 'Kolkata', 'Hyderabad', 'Chennai']
 times = ['Early_Morning', 'Morning', 'Afternoon', 'Evening', 'Night', 'Late_Night']
 
-stops_map = {'0': 0, '1': 1, '2+': 2}
-class_map = {'Economy': 0, 'Business': 1}
-
-# CRITICAL FIX: Explicit hardcoded schema order from the training get_dummies configuration
-# This ensures a perfect matrix shape match without relying on external file dependencies
-EXPECTED_MODEL_FEATURES = [
-    'stops', 'class', 'duration', 'days_left',
-    'airline_AirAsia', 'airline_Air_India', 'airline_GO_FIRST', 'airline_Indigo', 'airline_SpiceJet', 'airline_Vistara',
-    'source_city_Bangalore', 'source_city_Chennai', 'source_city_Delhi', 'source_city_Hyderabad', 'source_city_Kolkata', 'source_city_Mumbai',
-    'departure_time_Afternoon', 'departure_time_Early_Morning', 'departure_time_Evening', 'departure_time_Late_Night', 'departure_time_Morning', 'departure_time_Night',
-    'arrival_time_Afternoon', 'arrival_time_Early_Morning', 'arrival_time_Evening', 'arrival_time_Late_Night', 'arrival_time_Morning', 'arrival_time_Night',
-    'destination_city_Bangalore', 'destination_city_Chennai', 'destination_city_Delhi', 'destination_city_Hyderabad', 'destination_city_Kolkata', 'destination_city_Mumbai'
-]
+# Fallback schema order matching pd.get_dummies configuration in model.py
+if dynamic_features is not None:
+    EXPECTED_MODEL_FEATURES = dynamic_features
+else:
+    EXPECTED_MODEL_FEATURES = [
+        'duration', 'days_left',
+        'airline_AirAsia', 'airline_Air_India', 'airline_GO_FIRST', 'airline_Indigo', 'airline_SpiceJet', 'airline_Vistara',
+        'source_city_Bangalore', 'source_city_Chennai', 'source_city_Delhi', 'source_city_Hyderabad', 'source_city_Kolkata', 'source_city_Mumbai',
+        'departure_time_Afternoon', 'departure_time_Early_Morning', 'departure_time_Evening', 'departure_time_Late_Night', 'departure_time_Morning', 'departure_time_Night',
+        'stops_one', 'stops_two_or_more', 'stops_zero',
+        'arrival_time_Afternoon', 'arrival_time_Early_Morning', 'arrival_time_Evening', 'arrival_time_Late_Night', 'arrival_time_Morning', 'arrival_time_Night',
+        'destination_city_Bangalore', 'destination_city_Chennai', 'destination_city_Delhi', 'destination_city_Hyderabad', 'destination_city_Kolkata', 'destination_city_Mumbai',
+        'class_Business', 'class_Economy'
+    ]
 
 # =====================================================================
 # 3. Application Interface - Header
@@ -71,7 +98,16 @@ Estimate airline ticket prices using a highly optimized XGBoost regression model
 st.divider()
 
 if model is None:
-    st.error(f"Critical Error: Core serialization asset `{MODEL_PATH}` not found in project workspace directory. Please ensure the model file is generated before starting the UI application.")
+    st.error("❌ **Critical Error: Trained Model File Not Found**")
+    st.markdown(f"""
+    The serialized model file (`{MODEL_PATH}`) could not be located in the project directory. 
+    
+    To generate the model, please run the training pipeline script:
+    ```bash
+    python model.py
+    ```
+    This will execute the model training, optimization, and validation process, saving the champion XGBoost model to `model/xgb_flight_price.pkl`.
+    """)
     st.stop()
 
 # =====================================================================
@@ -118,23 +154,37 @@ with st.form(key='prediction_input_form'):
 if submit_button:
     # Business Logic Guard: Validate that source and destination are distinct
     if source_city == destination_city:
-        st.error(f"❌ Invalid Itinerary: Source city and Destination city cannot both be **{source_city}**. Please select distinct cities for your flight route.")
+        st.error(
+    f"❌ Source and destination cannot both be **{source_city}**. Please choose different cities."
+)
     else:
         # 1. Initialize a base zeroed dictionary matching all expected model feature columns
         encoded_features = {feat: 0 for feat in EXPECTED_MODEL_FEATURES}
 
-        # 2. Map structural continuous numerical and ordinal features
-        encoded_features['stops'] = stops_map[stops_input]
-        encoded_features['class'] = class_map[flight_class]
-        encoded_features['duration'] = float(duration)
-        encoded_features['days_left'] = int(days_left)
+        # 2. Map structural continuous numerical features
+        if 'duration' in encoded_features:
+            encoded_features['duration'] = float(duration)
+        if 'days_left' in encoded_features:
+            encoded_features['days_left'] = int(days_left)
 
         # 3. Handle One-Hot Encoding values dynamically by setting chosen levels to 1
-        encoded_features[f'airline_{airline}'] = 1
-        encoded_features[f'source_city_{source_city}'] = 1
-        encoded_features[f'departure_time_{departure_time}'] = 1
-        encoded_features[f'arrival_time_{arrival_time}'] = 1
-        encoded_features[f'destination_city_{destination_city}'] = 1
+        def set_feature_active(prefix, value):
+            col_name = f"{prefix}_{value}"
+            if col_name in encoded_features:
+                encoded_features[col_name] = 1
+
+        set_feature_active('airline', airline)
+        set_feature_active('source_city', source_city)
+        set_feature_active('departure_time', departure_time)
+        set_feature_active('arrival_time', arrival_time)
+        set_feature_active('destination_city', destination_city)
+
+        # Map stops (UI options: '0', '1', '2+') to one-hot categories ('zero', 'one', 'two_or_more')
+        stops_mapping = {'0': 'zero', '1': 'one', '2+': 'two_or_more'}
+        set_feature_active('stops', stops_mapping.get(stops_input, 'zero'))
+
+        # Map class (UI options: 'Economy', 'Business') to one-hot categories ('Economy', 'Business')
+        set_feature_active('class', flight_class)
 
         # 4. Convert structural map directly to DataFrame with explicit training column sorting
         df_final_features = pd.DataFrame([encoded_features])[EXPECTED_MODEL_FEATURES]
@@ -145,61 +195,95 @@ if submit_button:
 
         # Display Result Metric Card
         st.divider()
-        st.metric(
-            label="Estimated Ticket Fare Prediction",
-            value=f"₹{final_fare:,.2f}"
-        )
+        st.success("🎉 Prediction Generated Successfully!")
+        
+        col_metric, col_summary = st.columns([1, 1])
+        with col_metric:
+            st.metric(
+                label="Estimated Ticket Fare",
+                value=f"₹{round(final_fare):,}",
+                help="Fare estimated via the tuned XGBoost model."
+            )
+            st.caption("ℹ️ Estimates are projections based on historical data and dynamic flight features.")
 
         # Input Summary Parameters Panel
-        st.subheader("📑 Itinerary Inference Summary")
-        summary_col1, summary_col2 = st.columns(2)
-        with summary_col1:
-            st.markdown(f"**Journey:** {source_city} $\\rightarrow$ {destination_city}")
+        with col_summary:
+            st.subheader("📑 Itinerary Details")
+            st.markdown(f"**Journey:** {source_city} → {destination_city}")
             st.markdown(f"**Airline:** {airline}")
-            st.markdown(f"**Cabin Class:** {flight_class}")
-        with summary_col2:
-            st.markdown(f"**Flight Duration:** {duration} Hours")
-            st.markdown(f"**Route Layout:** {stops_input} Stop(s)")
+            st.markdown(f"**Class:** {flight_class}")
+            st.markdown(f"**Duration:** {duration} Hours | **Stops:** {stops_input}")
             st.markdown(f"**Days to Departure:** {days_left} Days")
 
 st.divider()
 # =====================================================================
 # 6. Interpretability & Diagnostics Reference Blocks (Static Media Assets)
 # =====================================================================
-st.subheader("🔍 Model Explainability")
+st.subheader("🔍 Model Explainability & Diagnostics")
 
 st.markdown(
-    "Explore how the trained XGBoost model makes predictions using global feature importance and SHAP explainability."
+    "Explore how the final XGBoost model makes predictions using feature importance, SHAP explainability, and residual diagnostics."
 )
 
 st.info("""
-• **Feature Importance** ranks the variables that contribute most to the model.
-• **SHAP Summary** explains how each feature increases or decreases the predicted flight price.
+• **Feature Importance** ranks the most influential features using XGBoost's gain metric.
+• **SHAP Explanations** illustrate the direction and magnitude of feature impacts on fares.
+• **Diagnostics & Residuals** display model accuracy and verify the error distribution.
 """)
 
-tab1, tab2 = st.tabs(["Feature Importance", "SHAP Summary"])
+# Setup visual tabs matching the artifacts generated by model.py
+tab1, tab2, tab3, tab4 = st.tabs([
+    "📈 Feature Importance", 
+    "🔮 SHAP Summary",
+    "📊 Prediction Accuracy",
+    "📉 Residual Diagnostics"
+])
+
+# Helper function to find a file in assets or root directory
+def get_asset_path(filename):
+    assets_path = os.path.join("assets", filename)
+    if os.path.exists(assets_path):
+        return assets_path
+    elif os.path.exists(filename):
+        return filename
+    return None
 
 with tab1:
-    if os.path.exists("shap2.png"):
-        left, center, right = st.columns([1, 4, 1])
-        with center:
-            st.image(
-                "shap2.png",
-                caption="XGBoost Feature Importance (Gain)"
-            )
+    importance_img = get_asset_path("feature_importance.png")
+    if importance_img:
+        st.image(importance_img, use_container_width=True, caption="XGBoost Gain-Based Feature Importance")
     else:
         st.warning("Feature importance image not found.")
 
 with tab2:
-    if os.path.exists("shap.png"):
-        left, center, right = st.columns([1, 4, 1])
-        with center:
-            st.image(
-                "shap.png",
-                caption="SHAP Summary Plot"
-            )
+    shap_summary_img = get_asset_path("shap_summary.png")
+    shap_importance_img = get_asset_path("shap_importance.png")
+    
+    col_shap1, col_shap2 = st.columns(2)
+    with col_shap1:
+        if shap_summary_img:
+            st.image(shap_summary_img, use_container_width=True, caption="SHAP Summary Density Plot")
+        else:
+            st.warning("SHAP Summary image not found.")
+    with col_shap2:
+        if shap_importance_img:
+            st.image(shap_importance_img, use_container_width=True, caption="Mean Absolute SHAP Values")
+        else:
+            st.warning("SHAP Importance image not found.")
+
+with tab3:
+    performance_img = get_asset_path("predicted_vs_actual.png")
+    if performance_img:
+        st.image(performance_img, use_container_width=True, caption="Predicted vs Actual Flight Prices")
     else:
-        st.warning("SHAP summary image not found.")
+        st.warning("Model performance comparison image not found.")
+
+with tab4:
+    residual_img = get_asset_path("residual_plot.png")
+    if residual_img:
+        st.image(residual_img, use_container_width=True, caption="Residuals vs Predicted Prices")
+    else:
+        st.warning("Residual plot diagnostics image not found.")
 # =====================================================================
 # 7. Page Footer
 # =====================================================================
