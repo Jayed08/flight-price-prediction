@@ -216,7 +216,7 @@ Flight-Price-Prediction/
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/flight-price-prediction.git
+git clone https://github.com/Jayed08/flight-price-prediction.git
 
 cd flight-price-prediction
 ```
