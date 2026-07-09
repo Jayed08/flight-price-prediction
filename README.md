@@ -259,7 +259,6 @@ streamlit run app.py
 
 - Incorporate live flight pricing APIs
 - Time-series aware validation
-- Ensemble learning
 - Model uncertainty estimation
 - Automated retraining pipeline
 
