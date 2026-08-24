@@ -1,0 +1,383 @@
+Color palette
+
+Use charcoal + warm amber + neutral gray.
+
+Element	Color
+App background	#111315
+Sidebar	#17191C
+Cards / containers	#1D2023
+Borders	#34383D
+Primary accent	#D6A84F
+Primary text	#E8E6E1
+Secondary text	#9EA3A8
+Success	#6FAF8F
+Error	#C96A6A
+
+The muted amber is the important part. It gives the app a distinct identity without looking like another blue/purple AI application.
+
+I would not use gradients.
+
+Font
+
+I'd use IBM Plex Sans.
+
+It has a more technical/data-science feel than the very common Inter/Poppins combination.
+
+Use:
+
+IBM Plex Sans → UI and headings
+IBM Plex Mono → metrics / model numbers if you want a technical touch
+
+For example:
+
+Flight Price Prediction
+
+in IBM Plex Sans SemiBold rather than the current very heavy Streamlit-looking heading.
+
+Avoid:
+
+Poppins
+Montserrat
+Roboto + Inter combinations
+futuristic fonts
+
+They tend to make the application look more like a generic AI SaaS landing page.
+
+1. Remove most emojis
+
+This is probably the single biggest improvement.
+
+Currently you have:
+
+✈️ Flight Price Prediction
+📊 Model Overview
+🎯 Test Set Performance
+🔄 5-Fold Cross Validation
+⚙️ Training Pipeline
+📋 Flight Itinerary Specifications
+🔍 Model Explainability & Diagnostics
+
+That is exactly the kind of visual language that makes a portfolio project look AI-generated.
+
+I'd use almost no emojis.
+
+For example:
+
+Flight Price Prediction
+
+Model Overview
+
+Test Set Performance
+
+5-Fold Cross Validation
+
+Training Pipeline
+
+Flight Itinerary
+
+Model Explainability
+
+You can keep the airplane emoji in the main title if you really like it:
+
+✈ Flight Price Prediction
+
+But don't put an emoji in every section.
+
+2. Your sidebar
+
+Current sidebar is actually structurally good. Change the colors and typography rather than redesigning it.
+
+I'd make it:
+
+MODEL OVERVIEW
+
+Model
+XGBoost Regressor
+
+DATASET
+300,153 flight records
+37 features
+
+TEST SET PERFORMANCE
+R²       0.9895
+RMSE     ₹2,330
+MAE      ₹1,085
+
+5-FOLD CROSS-VALIDATION
+R²       0.9889
+RMSE     ₹2,395
+MAE      ₹1,133
+
+────────────────────
+
+TRAINING PIPELINE
+
+Optuna hyperparameter tuning
+5-fold cross-validation
+SHAP explainability
+Leakage-aware preprocessing
+
+Notice there are no colored code-style boxes around the numbers.
+
+Instead of:
+
+0.9895 in a green pill
+
+use plain numbers with the accent color:
+
+R² 0.9895
+
+That will look much more like a professional analytics application.
+
+3. Prediction page
+
+Your current page is already structurally good.
+
+I'd change:
+
+Current
+
+📋 Flight Itinerary Specifications
+
+To
+
+Flight Itinerary
+
+Then use a thin amber line or subtle border rather than an emoji.
+
+For the button, instead of the current bright red:
+
+Predict Flight Price
+
+use your amber:
+
+Predict Fare
+
+with a dark text color.
+
+That gives you a distinctive visual identity.
+
+4. Stop using bright Streamlit blue for st.info
+
+This is particularly noticeable in your second screenshot.
+
+You currently have this giant blue box:
+
+Feature Importance ranks...
+
+It looks very much like a generic Streamlit/AI-generated dashboard.
+
+Make it a neutral dark information panel with an amber left border.
+
+Conceptually:
+
+┌─────────────────────────────────────────────
+│ Feature Importance ranks...
+│ SHAP explains...
+│ Residual diagnostics...
+└─────────────────────────────────────────────
+
+with:
+
+background #1D2023
+border #34383D
+left border #D6A84F
+text #B8BCC0
+
+This will look substantially better.
+
+5. Tabs
+
+Your current tabs:
+
+📈 Feature Importance
+🔮 SHAP Summary
+📊 Prediction Accuracy
+📉 Residual Diagnostics
+
+Again, remove the emojis:
+
+Feature Importance
+SHAP Summary
+Prediction Accuracy
+Residual Diagnostics
+
+And use amber only for the active tab.
+
+Don't use red.
+
+6. Your charts need changing too
+
+This is important.
+
+Your Streamlit application is dark, but your feature-importance plot has a huge white background.
+
+That creates a visual disconnect:
+
+dark application
+       ↓
+WHITE chart
+       ↓
+dark application
+
+Make the charts match the application.
+
+For your XGBoost feature importance, I'd use:
+
+background: #1D2023
+text: #D8D6D0
+grid: #34383D
+bars: #D6A84F
+
+One bar color, not a purple/green gradient.
+
+Your current purple gradient is another strong contributor to the AI-dashboard appearance.
+
+7. SHAP chart
+
+For SHAP, keep the standard SHAP red/blue semantics because those colors actually carry meaning:
+
+red → high feature value
+blue → low feature value
+
+Don't arbitrarily replace those.
+
+But change the surrounding plot background and text to match your application.
+
+So:
+
+Native feature importance: amber
+SHAP: standard red/blue
+Residual plot: neutral/amber
+Predicted vs actual: neutral/amber
+
+That gives the app a coherent system without destroying the meaning of SHAP.
+
+8. Heading sizes
+
+Your current:
+
+Flight Price Prediction
+
+is very large and heavy.
+
+I'd reduce it slightly.
+
+Something like:
+
+Flight Price Prediction
+
+with:
+
+IBM Plex Sans
+38–44 px
+weight 600 rather than 800
+
+Section headings:
+
+24–28 px
+weight 600
+
+Normal text:
+
+15–16 px
+weight 400
+
+This will make it look more like an actual engineering application and less like a generated showcase page.
+
+9. Don't over-round everything
+
+Your current UI has a lot of rounded rectangles.
+
+I'd reduce the border radius.
+
+Use approximately:
+
+border-radius: 6px;
+
+instead of very rounded cards.
+
+This is another subtle but significant difference.
+
+AI SaaS aesthetic: 16px–24px rounded cards
+Technical application: 4px–8px restrained corners
+
+For your project, I'd choose 6px.
+
+10. Exact CSS direction
+
+You can put something along these lines into your Streamlit CSS:
+
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.stApp {
+    background-color: #111315;
+    color: #E8E6E1;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #17191C;
+    border-right: 1px solid #34383D;
+}
+
+h1, h2, h3 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.stButton > button {
+    background-color: #D6A84F;
+    color: #111315;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.stButton > button:hover {
+    background-color: #E0B866;
+}
+
+div[data-testid="stMetric"] {
+    background-color: #1D2023;
+    border: 1px solid #34383D;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+</style>
+
+You can then refine the exact Streamlit selectors based on your current app.
+
+The visual identity I'd use
+
+Think:
+
+Bloomberg terminal / aviation operations dashboard / engineering analytics
+
+rather than:
+
+ChatGPT / AI SaaS / futuristic AI dashboard
+
+Final palette
+Background       #111315
+Sidebar          #17191C
+Surface          #1D2023
+Border           #34383D
+Accent           #D6A84F
+Primary text     #E8E6E1
+Secondary text   #9EA3A8
+Success          #6FAF8F
+Error            #C96A6A
+Typography
+IBM Plex Sans
+IBM Plex Mono (optional for numerical/model values)
+And most importantly
+
+Remove ~80% of the emojis, eliminate purple, eliminate bright Streamlit blue/red, remove green metric pills, and make your charts visually consistent with the app.

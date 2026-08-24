@@ -13,6 +13,226 @@ st.set_page_config(
     layout="wide"
 )
 
+# Custom Styling (Theme: Charcoal + Warm Amber + Neutral Gray | Font: IBM Plex Sans & Mono)
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+html, body, [class*="css"], .stApp {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background-color: #111315;
+    color: #E8E6E1;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'IBM Plex Sans', sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+    color: #E8E6E1 !important;
+}
+
+h1 {
+    font-size: 2.2rem !important;
+}
+
+h2 {
+    font-size: 1.5rem !important;
+}
+
+h3 {
+    font-size: 1.25rem !important;
+}
+
+/* Secondary text & Captions */
+.stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] * {
+    color: #9EA3A8 !important;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #17191C !important;
+    border-right: 1px solid #34383D !important;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #E8E6E1;
+}
+
+section[data-testid="stSidebar"] .stCaption,
+section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] * {
+    color: #9EA3A8 !important;
+}
+
+/* Buttons */
+.stButton > button, 
+div[data-testid="stFormSubmitButton"] > button {
+    background-color: #D6A84F !important;
+    color: #111315 !important;
+    border: 1px solid #D6A84F !important;
+    border-radius: 6px !important;
+    font-family: 'IBM Plex Sans', sans-serif !important;
+    font-weight: 600 !important;
+}
+
+.stButton > button:hover, 
+div[data-testid="stFormSubmitButton"] > button:hover,
+.stButton > button:active, 
+div[data-testid="stFormSubmitButton"] > button:active {
+    background-color: #E0B866 !important;
+    border-color: #E0B866 !important;
+    color: #111315 !important;
+}
+
+.stButton > button:focus, 
+div[data-testid="stFormSubmitButton"] > button:focus {
+    box-shadow: 0 0 0 2px #111315, 0 0 0 4px #D6A84F !important;
+}
+
+/* Metrics */
+div[data-testid="stMetric"] {
+    background-color: #1D2023 !important;
+    border: 1px solid #34383D !important;
+    border-radius: 6px !important;
+    padding: 14px 18px !important;
+}
+
+div[data-testid="stMetricLabel"] p, 
+div[data-testid="stMetricLabel"] {
+    color: #9EA3A8 !important;
+    font-family: 'IBM Plex Sans', sans-serif !important;
+    font-size: 0.88rem !important;
+}
+
+div[data-testid="stMetricValue"] div, 
+div[data-testid="stMetricValue"] {
+    color: #D6A84F !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+    font-weight: 600 !important;
+}
+
+/* Form Container */
+[data-testid="stForm"] {
+    background-color: #17191C !important;
+    border: 1px solid #34383D !important;
+    border-radius: 6px !important;
+}
+
+/* Inputs, Selectboxes, Radio, Sliders */
+div[data-baseweb="select"] > div, 
+div[data-baseweb="input"] > div, 
+div[data-baseweb="input"] input {
+    background-color: #1D2023 !important;
+    border-color: #34383D !important;
+    color: #E8E6E1 !important;
+    border-radius: 6px !important;
+    font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
+div[data-baseweb="select"] * {
+    color: #E8E6E1 !important;
+}
+
+div[data-baseweb="popover"], 
+div[data-baseweb="menu"], 
+ul[role="listbox"] {
+    background-color: #1D2023 !important;
+    border: 1px solid #34383D !important;
+    border-radius: 6px !important;
+}
+
+li[role="option"] {
+    background-color: #1D2023 !important;
+    color: #E8E6E1 !important;
+    font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
+li[role="option"]:hover, 
+li[role="option"][aria-selected="true"] {
+    background-color: #34383D !important;
+    color: #D6A84F !important;
+}
+
+/* Slider */
+div[data-testid="stSlider"] div[role="slider"] {
+    background-color: #D6A84F !important;
+}
+
+/* Radio buttons */
+div[data-testid="stRadio"] label span {
+    color: #E8E6E1 !important;
+    font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
+/* Alerts / Callout Boxes */
+div[data-testid="stAlert"] {
+    background-color: #1D2023 !important;
+    border: 1px solid #34383D !important;
+    border-left: 4px solid #D6A84F !important;
+    border-radius: 6px !important;
+    color: #E8E6E1 !important;
+    font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
+div[data-testid="stAlert"] [data-testid="stMarkdownContainer"] {
+    color: #E8E6E1 !important;
+}
+
+/* Tabs */
+div[data-baseweb="tab-list"] {
+    border-bottom: 1px solid #34383D !important;
+    background-color: transparent !important;
+    gap: 8px;
+}
+
+button[data-baseweb="tab"] {
+    font-family: 'IBM Plex Sans', sans-serif !important;
+    font-weight: 500 !important;
+    color: #9EA3A8 !important;
+    border-radius: 6px 6px 0 0 !important;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 8px 16px !important;
+}
+
+button[data-baseweb="tab"]:hover {
+    color: #E8E6E1 !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #D6A84F !important;
+    font-weight: 600 !important;
+}
+
+div[data-baseweb="tab-highlight"] {
+    background-color: #D6A84F !important;
+}
+
+div[data-baseweb="tab-border"] {
+    background-color: #34383D !important;
+}
+
+/* Dividers */
+hr {
+    border-color: #34383D !important;
+}
+
+/* Code */
+code, pre, code * {
+    font-family: 'IBM Plex Mono', monospace !important;
+}
+
+code {
+    background-color: #1D2023 !important;
+    color: #D6A84F !important;
+    border: 1px solid #34383D !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # Sidebar - Technical Specifications Matrix
 st.sidebar.header("📊 Model Overview")
 
@@ -289,7 +509,7 @@ with tab4:
 # =====================================================================
 st.divider()
 st.markdown("""
-<div style="text-align:center; color:gray; font-size:14px;">
+<div style="text-align:center; color:#9EA3A8; font-size:14px; font-family:'IBM Plex Sans', sans-serif;">
 © 2026 Jayed Ansari<br>
 Built with <b>Python</b>, <b>XGBoost</b>, <b>Optuna</b>, <b>SHAP</b>, <b>Scikit-learn</b>, and <b>Streamlit</b>.
 </div>
